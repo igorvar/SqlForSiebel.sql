@@ -1,0 +1,15 @@
+select 
+'delete from S_WS_PORT_TYPE where ROW_ID = ''' || portType.ROW_ID || ''';' "Port Type",
+'delete from S_WS_OPERATION where ROW_ID = ''' || oper.ROW_ID || ''';'  "Operation",
+'delete from S_WS_PORT_OPER where ROW_ID = ''' || portOperIT.ROW_ID|| ''';' "S_WS_PORT_OPER",
+'delete from S_WS_PORT where ROW_ID = '''  || port.ROW_ID || ''';' "Port",
+'delete from S_WS_WEBSERVICE where ROW_ID = '''  || ws.ROW_ID || ''';' "Web Service"
+
+from S_WS_WEBSERVICE ws 
+join S_WS_PORT port on ws.ROW_ID = port.WEB_SERVICE_ID
+join S_WS_PORT_OPER portOperIT on port.ROW_ID = portOperIT.PORT_ID
+join S_WS_OPERATION oper on portOperIT.OPERATION_ID = oper.ROW_ID
+join S_WS_PORT_TYPE portType on port.WS_PORT_TYPE_ID = portType.ROW_ID
+where 
+
+ws.Name = 'MyWebService'
