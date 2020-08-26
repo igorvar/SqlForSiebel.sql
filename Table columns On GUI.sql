@@ -20,13 +20,13 @@ select * from (
   
   /*select * from*/ 
     (
-    select applet.NAME Applet, applet.BUSCOMP_NAME, appListClmn.FIELD_NAME, 'ListColumn' Type_On_GUI, appListClmn.NAME Control from  S_APPLET applet --and applet.BUSCOMP_NAME = bc.NAME
+    select applet.NAME Applet, applet.BUSCOMP_NAME, appListClmn.FIELD_NAME, 'ListColumn' Type_On_GUI, appListClmn.ROW_ID Control from  S_APPLET applet --and applet.BUSCOMP_NAME = bc.NAME
       join S_REPOSITORY rep on applet.REPOSITORY_ID = rep.ROW_ID 
       join S_LIST appList on appList.APPLET_ID = applet.ROW_ID
       join S_LIST_COLUMN appListClmn on appListClmn.LIST_ID = appList.ROW_ID and appListClmn.INACTIVE_FLG = 'N'
       where rep.NAME='Siebel Repository' and applet.INACTIVE_FLG = 'N' 
     union all
-      select applet.NAME, applet.BUSCOMP_NAME, control.FIELD_NAME, 'FormControl' Type_On_GUI, control.NAME Control from  S_APPLET applet --and applet.BUSCOMP_NAME = bc.NAME
+      select applet.NAME, applet.BUSCOMP_NAME, control.FIELD_NAME, 'FormControl' Type_On_GUI, control.ROW_ID Control from  S_APPLET applet --and applet.BUSCOMP_NAME = bc.NAME
       join S_REPOSITORY rep on applet.REPOSITORY_ID = rep.ROW_ID 
       join S_CONTROL control on control.APPLET_ID = applet.ROW_ID and control.INACTIVE_FLG = 'N'
       where rep.NAME='Siebel Repository' and applet.INACTIVE_FLG = 'N' 
@@ -58,7 +58,7 @@ select * from (
     
     left outer join
     (
-     select applet.NAME applet, applet.BUSCOMP_NAME, 'ListColumn' ControlType, ListColumn.NAME control,ListColumn.FIELD_NAME, case when LanguageAlias.DISPLAY_NAME is not null then LanguageAlias.DISPLAY_NAME else DisplayNameExact.STRING_VALUE end Display_Name
+     select applet.NAME applet, applet.BUSCOMP_NAME, 'ListColumn' ControlType, ListColumn.ROW_ID control,ListColumn.FIELD_NAME, case when LanguageAlias.DISPLAY_NAME is not null then LanguageAlias.DISPLAY_NAME else DisplayNameExact.STRING_VALUE end Display_Name
          ,DisplayNameExact.LANG_CD
         from S_APPLET applet
         join S_REPOSITORY repository on applet.REPOSITORY_ID = repository.ROW_ID
@@ -67,10 +67,8 @@ select * from (
         left outer join S_LIST_COL_INTL LanguageAlias on LanguageAlias.INACTIVE_FLG = 'N' and LanguageAlias.LIST_COLUMN_ID = ListColumn.ROW_ID
         left outer join S_SYM_STR_INTL DisplayNameExact on DisplayNameExact.INACTIVE_FLG = 'N' and DisplayNameExact.REPOSITORY_ID = ListColumn.REPOSITORY_ID and DisplayNameExact.SYM_STR_KEY = ListColumn.DISPLAY_NAME_REF 
         where repository.NAME = 'Siebel Repository'
-        
         union all 
-        
-        select applet.NAME applet, applet.BUSCOMP_NAME, 'Control' ControlType, control.NAME control,control.FIELD_NAME, case when LanguageAlias.CAPTION is not null then LanguageAlias.CAPTION else CaptionExact.STRING_VALUE end Display_Name
+        select applet.NAME applet, applet.BUSCOMP_NAME, 'Control' ControlType, control.ROW_ID control,control.FIELD_NAME, case when LanguageAlias.CAPTION is not null then LanguageAlias.CAPTION else CaptionExact.STRING_VALUE end Display_Name
         ,CaptionExact.LANG_CD
         from S_APPLET applet
         join S_REPOSITORY repository on applet.REPOSITORY_ID = repository.ROW_ID
@@ -79,11 +77,7 @@ select * from (
         left outer join S_SYM_STR_INTL CaptionExact on CaptionExact.INACTIVE_FLG = 'N'  and CaptionExact.SYM_STR_KEY = control.CAPTION_REF and CaptionExact.REPOSITORY_ID = control.REPOSITORY_ID
         where repository.NAME = 'Siebel Repository'
     ) captions
-    
-    on applets.Applet = captions.APPLET and applets.Control = captions.CONTROL and applets.Control in ('ListColumn', 'FormControl')
-    
-    
+    on applets.Control = captions.CONTROL /*applets.Applet = captions.APPLET and */
 ) t 
- 
- 
+  
  where APPLET = 'ServiceRequest Home Public and Private View Link List Applet'
