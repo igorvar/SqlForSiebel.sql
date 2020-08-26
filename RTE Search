@@ -1,0 +1,32 @@
+select ACTION ACTION,
+EVT EVT,
+--OBJ_TYPE_CD OBJ_TYPE_CD,
+OBJ_NAME OBJ_NAME,
+EVT_NAME EVT_NAME,
+EVT_SUB_NAME EVT_SUB_NAME,
+EVENT_CONDITIONAL EVENT_CONDITIONAL,
+ACTIONS_SET ACTIONS_SET,
+ACTION_TYPE ACTION_TYPE,
+ACTION_NAME ACTION_NAME from 
+(select 
+    case 
+        when Actions.COND_EXPR is null then ''
+        else 'IF ' || Actions.COND_EXPR || '
+        ' 
+    end
+    ||
+    case Actions.ACTN_TYPE_CD
+        when 'Attribute Set'/* 'קבוצת תכונות'*/  then Actions.SET_OPER_CD || ' ProfileAttribute ' || Actions.SET_ATTR || ' = ' || Actions.SET_RHS_EXPR
+        when 'Invoke Method' /*שיטת הפעלה*/then 'Invoke method ' || Actions.METHOD_NAME
+        when 'BusService' then 'BS ' || Actions.SVC_NAME || '.' || Actions.SVC_METHOD_NAME || ', context: ' || Actions.SVC_CONTEXT
+        else 'Attribute Set: ' || Actions.SET_OPER_CD || Actions.SET_ATTR || ' = ' || Actions.SET_RHS_EXPR || '; Invoke method ' || Actions.METHOD_NAME || '; BS: ' || Actions.SVC_NAME || '.' || Actions.SVC_METHOD_NAME || ' (' || Actions.SVC_CONTEXT || ')'
+    end Action, 'Id=' || Event.ROW_ID Evt, /*Event.OBJ_TYPE_CD,*/ Event.OBJ_NAME, Event.EVT_NAME, Event.EVT_SUB_NAME, Event.ACTN_COND_EXPR Event_Conditional, 
+    ActionsSet.NAME Actions_Set, --'Id=' || ActionsSet.ROW_ID ActionsSet_Id,  
+    Actions.ACTN_TYPE_CD Action_Type, Actions.NAME Action_Name -- Actions.METHOD_NAME Invoke_Method, Actions.SVC_NAME BS, Actions.SVC_METHOD_NAME BS_Method , Actions.SET_ATTR Attribute_Name, Actions.SET_OPER_CD Operation, Actions.SET_RHS_EXPR Set_Expression, Actions.COND_EXPR Action_Conditional
+    
+    from S_CT_ACTION Actions 
+join S_CT_ACTION_SET ActionsSet on ActionsSet.ROW_ID = Actions.CT_ACTN_SET_ID
+join S_CT_EVENT Event on Event.CT_ACTN_SET_ID = ActionsSet.ROW_ID
+)
+
+where UPPER(Action) like UPPER('%r log%');
