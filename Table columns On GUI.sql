@@ -1,17 +1,40 @@
 /*
+IgorV.
+
 Search columns in table it used on applets
 */
 --Fields in BC
 select * from (
-  select fields.BC, fields.TABLE_NAME, fields.JOIN_NAME, fields.COL_NAME, fields.NAME Field_Name, fields.TYPE, applets.Applet, applets.Type_On_GUI--, applets.Control
+  select fields.BC, fields.NAME Field_Name, fields.TABLE_NAME, /*fields.JOIN_NAME,*/ /*fields.JOINED_TABLE,*/ fields.COL_NAME, fields.TYPE, applets.Applet, applets.Type_On_GUI--, applets.Control
     ,captions.LANG_CD ,captions.Display_Name
     --,captions.CONTROL
     from 
     (
-    select bc.NAME bc, bc.TABLE_NAME, fld.NAME, fld.JOIN_NAME, fld.COL_NAME,  fld.TYPE from S_FIELD fld
+   
+    /*select bc.NAME bc, bc.TABLE_NAME bc_TABLE, fld.NAME, fld.JOIN_NAME, tJoin.DEST_TBL_NAME JOINED_TABLE, fld.COL_NAME,  fld.TYPE 
+    from S_FIELD fld
     join S_BUSCOMP bc on fld.BUSCOMP_ID = bc.ROW_ID and bc.INACTIVE_FLG = 'N' 
     join S_REPOSITORY rep on bc.REPOSITORY_ID = rep.ROW_ID
-    where rep.NAME='Siebel Repository' and fld.INACTIVE_FLG = 'N'
+    left outer join S_JOIN tJoin on bc.ROW_ID = tJoin.BUSCOMP_ID and fld.JOIN_NAME = tJoin.NAME
+    where rep.NAME='Siebel Repository' and fld.INACTIVE_FLG = 'N'*/
+    select
+    bc.NAME bc, 
+    case 
+        when fld.CALCULATED = 'Y' then null 
+        else
+            case 
+                when fld.JOIN_NAME is not null then tTable.NAME
+                else bc.TABLE_NAME
+            end
+        end  TABLE_NAME,
+    fld.NAME, --fld.JOIN_NAME, tJoin.DEST_TBL_NAME JOINED_TABLE, 
+    fld.COL_NAME,  fld.TYPE 
+        from S_FIELD fld
+        join S_BUSCOMP bc on fld.BUSCOMP_ID = bc.ROW_ID and bc.INACTIVE_FLG = 'N' 
+        join S_REPOSITORY rep on bc.REPOSITORY_ID = rep.ROW_ID
+        left outer join S_JOIN tJoin on bc.ROW_ID = tJoin.BUSCOMP_ID and fld.JOIN_NAME = tJoin.NAME
+        left outer join S_TABLE tTable on tTable.REPOSITORY_ID = rep.ROW_ID and case when tJoin.DEST_TBL_NAME is null then fld.JOIN_NAME else tJoin.DEST_TBL_NAME end = tTable.NAME and tTable.INACTIVE_FLG = 'N'--  for implicit join
+        where rep.NAME='Siebel Repository' and fld.INACTIVE_FLG = 'N'
     ) fields
   --Applets: 
   
